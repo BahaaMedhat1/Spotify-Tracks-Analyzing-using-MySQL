@@ -19,8 +19,7 @@ This project involves analyzing Spotify data using MySQL. The aim is to explore 
 
 
 
-## Exploratory Data Analysis (EDA) Queries
-Here are some key EDA queries performed on the data:
+## Creating Tables & Loading Data into tables
 
 ### 1. Creating Database and Tables 
 ```sql
@@ -71,7 +70,7 @@ LINES TERMINATED BY "\r\n"
 IGNORE 1 ROWS;
 ```
 
-## Most Advanced Queries in This project 
+## Most Advanced Exploratory Data Analysis (EDA) Queries
 ### 1.  Retrieve the track names that have been streamed on Spotify more than YouTube
 ```sql
 with stream_spotify as(
@@ -95,3 +94,58 @@ where
 order by 
 	stream_spotify desc;
 ```
+
+### 2. calculate the difference between the highest and lowest energy values for tracks in each album.
+```sql
+with energy_album as(
+Select distinct
+	album, track, energy,
+    max(energy) over (PARTITION BY album) as max_energy,
+    min(energy) over (PARTITION BY album) as min_energy
+from
+	spotify
+order by 
+	1 desc, 2 desc)
+select
+	*, round(max_energy - min_energy ,2) as diff_energy
+from
+	energy_album;
+```
+
+### 3. Find the top 3 most-viewed tracks for each artist using window functions.
+```sql
+select * 
+from(
+select
+	artist,
+	track,
+    format(views,0 ) as total_views,
+    row_number() over (PARTITION BY artist order by views  desc) as row_num
+from
+	spotify
+order by 1 asc, views desc) as View_rank
+where
+	row_num <= 3;
+```
+---
+
+## Tools Used
+
+- **Database**: MySQL  
+- **Data Files**: CSV files containing sample library data  
+
+---
+
+## Usage Instructions
+
+1. Run `Creating & Loading Data.sql` to create the database and load data.  
+2. Execute `EDa Queries.sql` to perform operations and queries.  
+
+---
+
+## Contact
+
+For any queries or suggestions, feel free to reach out:  
+**Bahaa Medhat Wanas**  
+- LinkedIn: [Bahaa Wanas](https://www.linkedin.com/in/bahaa-wanas-9797b923a)  
+- Email: [bahaawanas427@gmail.com](mailto:bahaawanas427@gmail.com)
