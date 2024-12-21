@@ -24,17 +24,17 @@ This project involves analyzing Spotify data using MySQL. The aim is to explore 
 ### 1. Creating Database and Tables 
 ```sql
 CREATE DATABASE Spotify_Schema;
-use Spotify_Schema;
+USE Spotify_Schema;
 
 
 -- Creating the structure of our table.
 DROP TABlE if EXISTS Spotify;
 CREATE TABlE Spotify(
-	Artist Varchar(255),
-    Track Varchar(255),
-    Album Varchar(255),
-    Album_type Varchar(255),
-	Danceability DOUBLE, 
+    Artist VARHCAR(255),
+    Track VARHCAR(255),
+    Album VARHCAR(255),
+    Album_type VARHCAR(255),
+    Danceability DOUBLE, 
     Energy DOUBLE,	
     Loudness DOUBLE,	
     Speechiness DOUBLE,	
@@ -44,8 +44,8 @@ CREATE TABlE Spotify(
     Valence DOUBLE,	
     Tempo DOUBLE,	
     Duration_min DOUBLE,
-	Title Varchar(255),	
-    Channel Varchar(255),	
+    Title VARHCAR(255),	
+    Channel VARHCAR(255),	
     Views BIGINT,	
     Likes BIGINT,	
     Comments BIGINT,	
@@ -73,59 +73,62 @@ IGNORE 1 ROWS;
 ## Most Advanced Exploratory Data Analysis (EDA) Queries
 ### 1.  Retrieve the track names that have been streamed on Spotify more than YouTube
 ```sql
-with stream_spotify as(
-select
+WITH stream_spotify AS (
+SELECT
 	track,
-    coalesce(sum(case when most_playedON = "Spotify" then stream end ), 0) as stream_spotify,
-    ifnull(sum(case when most_playedON = "Youtube" then stream end ), 0) as stream_Youtube
-from 
+    COALESCE(SUM(CASE WHEN most_playedON = "Spotify" THEN stream END), 0) AS stream_spotify,
+    IFNULL(SUM(CASE WHEN most_playedON = "Youtube" THEN stream END), 0) AS stream_Youtube
+FROM 
 	spotify
-group by
-	track)
-select
+GROUP BY
+	track
+)
+SELECT
 	track,
-    format(stream_spotify, 0) as spotify,
-    format(stream_youtube, 0) as youtube
-from
+    FORMAT(stream_spotify, 0) AS spotify,
+    FORMAT(stream_youtube, 0) AS youtube
+FROM
 	stream_spotify
-where
-	stream_spotify> stream_Youtube
-    and stream_Youtube != 0
-order by 
-	stream_spotify desc;
+WHERE
+	stream_spotify > stream_Youtube
+    AND stream_Youtube != 0
+ORDER BY 
+	stream_spotify DESC;
 ```
 
 ### 2. calculate the difference between the highest and lowest energy values for tracks in each album.
 ```sql
-with energy_album as(
-Select distinct
+WITH energy_album AS (
+SELECT DISTINCT
 	album, track, energy,
-    max(energy) over (PARTITION BY album) as max_energy,
-    min(energy) over (PARTITION BY album) as min_energy
-from
+    MAX(energy) OVER (PARTITION BY album) AS max_energy,
+    MIN(energy) OVER (PARTITION BY album) AS min_energy
+FROM
 	spotify
-order by 
-	1 desc, 2 desc)
-select
-	*, round(max_energy - min_energy ,2) as diff_energy
-from
+ORDER BY 
+	1 DESC, 2 DESC
+)
+SELECT
+	*, ROUND(max_energy - min_energy, 2) AS diff_energy
+FROM
 	energy_album;
 ```
 
 ### 3. Find the top 3 most-viewed tracks for each artist using window functions.
 ```sql
-select * 
-from(
-select
-	artist,
-	track,
-    format(views,0 ) as total_views,
-    row_number() over (PARTITION BY artist order by views  desc) as row_num
-from
-	spotify
-order by 1 asc, views desc) as View_rank
-where
-	row_num <= 3;
+SELECT * 
+FROM (
+    SELECT
+        artist,
+        track,
+        FORMAT(views, 0) AS total_views,
+        ROW_NUMBER() OVER (PARTITION BY artist ORDER BY views DESC) AS row_num
+    FROM
+        spotify
+    ORDER BY 1 ASC, views DESC
+) AS View_rank
+WHERE
+    row_num <= 3;
 ```
 ---
 
